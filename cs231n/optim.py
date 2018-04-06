@@ -65,7 +65,8 @@ def sgd_momentum(w, dw, config=None):
     # TODO: Implement the momentum update formula. Store the updated value in #
     # the next_w variable. You should also use and update the velocity v.     #
     ###########################################################################
-    pass
+    v = config['momentum'] * v - config['learning_rate'] * dw
+    next_w = w + v
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -94,12 +95,19 @@ def rmsprop(x, dx, config=None):
     config.setdefault('cache', np.zeros_like(x))
 
     next_x = None
+    
     ###########################################################################
     # TODO: Implement the RMSprop update formula, storing the next value of x #
     # in the next_x variable. Don't forget to update cache value stored in    #
     # config['cache'].                                                        #
     ###########################################################################
-    pass
+    cache, decay_rate, epsilon, learning_rate \
+      = config['cache'], config['decay_rate'], \
+        config['epsilon'], config['learning_rate']
+    
+    cache = decay_rate * cache + (1- decay_rate) * dx**2
+    next_x = x - (learning_rate * dx / (np.sqrt(cache) + epsilon))
+    config['cache'] = cache
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -129,6 +137,8 @@ def adam(x, dx, config=None):
     config.setdefault('m', np.zeros_like(x))
     config.setdefault('v', np.zeros_like(x))
     config.setdefault('t', 1)
+    
+    beta1, beta2, t = config['beta1'], config['beta2'], config['t']
 
     next_x = None
     ###########################################################################
@@ -136,7 +146,16 @@ def adam(x, dx, config=None):
     # the next_x variable. Don't forget to update the m, v, and t variables   #
     # stored in config.                                                       #
     ###########################################################################
-    pass
+    
+    t += 1
+    
+    m = beta1 * config['m'] + (1 - beta1) * dx
+    mt = m / ( 1 - beta1**t )
+    v = beta2 * config['v'] + (1 - beta2) * (dx**2)
+    vt = v / ( 1 - beta2**t )
+    next_x = x + (-config['learning_rate'] * mt / (np.sqrt(vt) + config['epsilon']))
+    
+    config['m'], config['v'], config['t'] = m, v, t
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
